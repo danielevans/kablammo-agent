@@ -5,7 +5,7 @@ require './lib/fire_control.rb'
 require './lib/drive_control.rb'
 require './lib/predictive_targeting.rb'
 
-@debug = true
+@debug = false
 
 include MapInspection
 include FireControl
