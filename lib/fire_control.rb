@@ -1,7 +1,7 @@
 module FireControl
   def targeted_los(source, target)
     los = source.line_of_sight
-    target_index = los.index { |pixel| pixel.located_at?(target) }
+    target_index = los.index { |pixel| pixel.x == target.x && pixel.y == target.y }
     if target_index
       los = los[0..target_index]
     else
@@ -10,8 +10,8 @@ module FireControl
   end
 
   def aimed_properly?(test_robot, target)
-    los = targeted_los(robot, target)
-    !los.nil? && los.none? { |pixel| wall_at?(pixel) }
+    los = targeted_los(test_robot, target)
+    los && los.none? { |pixel| wall_at?(pixel) } && los.last.located_at?(target)
   end
 
   def firing_solutions(target)
@@ -22,9 +22,9 @@ module FireControl
     base_direction = robot.direction_to(target)
     test_robot = robot.clone
 
-    # range = (((base_direction - arc).to_i)..(base_direction + arc))
-    # samples = (range.step(range.count / 5).to_a + [(base_direction + arc).to_i]).uniq
-    samples = [(base_direction - arc + 0.5).to_i, base_direction, (base_direction + arc).to_i].uniq
+    range = (((base_direction - arc).to_i)..(base_direction + arc))
+    samples = (range.to_a + [(base_direction + arc).to_i]).uniq
+    # samples = [(base_direction - arc + 0.5).to_i, base_direction, (base_direction + arc).to_i].uniq
 
     samples.select do |rotation|
       test_robot.rotation = rotation
@@ -33,31 +33,36 @@ module FireControl
   end
 
   def fire_control_turn
-    result = ''
+    result = nil
     rt = Benchmark.realtime do
       solutions = nil
       target = opponents.first { |enemy| can_fire_at?(enemy) } || opponents.first
-
+      # log 'starting'
+      # log target
       if target
         if aimed_properly?(robot, target)
+          # log "Aimed Properly"
+          # log "#{robot.line_of_sight}"
           solutions = [robot.rotation]
         else
           solutions = firing_solutions(target)
         end
       end
-      if target && !solutions.empty?
-        immediate_solutions = solutions.select { |s| (s - robot.rotation).abs <= MAX_SKEW }
+      # log "#{(solutions || []).length} solutions found"
+      if target && !solutions.empty? && robot.ammo > 0
+        immediate_solutions = solutions.select { |s| (s - robot.rotation).abs <= Strategy::Constants::MAX_SKEW }
+        # log "#{immediate_solutions.length} imeediate solutions found"
         unless immediate_solutions.empty?
-          result = fire!((immediate_solutions[immediate_solutions.length / 2] - robot.direction_to(target) +0.5).to_i)
+          result = fire!((immediate_solutions[immediate_solutions.length / 2] - robot.rotation + 0.5).to_i)
         else
           result = rotate!((solutions[solutions.length / 2] +0.5).to_i)
         end
       elsif robot.ammo <= 1
-        result = rest!
+        result = rest
       end
     end
 
-    puts "Fire Control Turn handled in #{rt}"
+    log "Fire Control Turn handled in #{rt}, with result #{result};"
     result
   end
 end
