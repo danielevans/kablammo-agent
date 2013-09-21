@@ -10,7 +10,7 @@ module DriveControl
   def find_drive_target(target)
     if battle.board.walls.length > 0
       target_wall = battle.board.walls.reduce(nil) do |memo, wall|
-        if memo.nil? || location_heuristic(target, wall) < location_heursitic(target, memo)
+        if memo.nil? || location_heuristic(target, wall) < location_heuristic(target, memo)
           wall
         else
           memo
