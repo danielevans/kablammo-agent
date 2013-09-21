@@ -1,14 +1,4 @@
 module FireControl
-  def targeted_los(source, target)
-    los = source.line_of_sight
-    target_index = los.index { |pixel| pixel.x == target.x && pixel.y == target.y }
-    if target_index
-      los = los[0..target_index]
-    else
-      nil
-    end
-  end
-
   def aimed_properly?(test_robot, target)
     los = targeted_los(test_robot, target)
     los && los.none? { |pixel| wall_at?(pixel) } && los.last.located_at?(target)

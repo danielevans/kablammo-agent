@@ -1,4 +1,14 @@
 module MapInspection
+  def targeted_los(source, target)
+    los = source.line_of_sight
+    target_index = los.index { |pixel| pixel.x == target.x && pixel.y == target.y }
+    if target_index
+      los = los[0..target_index]
+    else
+      nil
+    end
+  end
+
   def distance(a,b)
     Math.sqrt((a.x - b.x)**2 + (a.y - b.y)**2)
   end
