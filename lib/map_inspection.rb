@@ -21,4 +21,8 @@ module MapInspection
     end
     (@walls[target.x] || {})[target.y]
   end
+
+  def choose_target
+    opponents.first { |enemy| can_fire_at?(enemy) } || opponents.first
+  end
 end

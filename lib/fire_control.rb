@@ -4,13 +4,13 @@ module FireControl
     los && los.none? { |pixel| wall_at?(pixel) } && los.last.located_at?(target)
   end
 
-  def firing_solutions(target)
+  def firing_solutions(r, target)
     # primary_vector = Vector[(target.x - robot.x).to_f, (target.y - robot.y).to_f]
     # normal_vector = Vector[primary_vector[1], 0 - primary_vector[0]].normalize
-    arc = Math.atan(1.0 / Math.sqrt((target.x - robot.x)**2 + (target.y - robot.y)**2)) * 360.0 / Math::PI
+    arc = Math.atan(1.0 / Math.sqrt((target.x - r.x)**2 + (target.y - r.y)**2)) * 360.0 / Math::PI
 
-    base_direction = robot.direction_to(target)
-    test_robot = robot.clone
+    base_direction = r.direction_to(target)
+    test_robot = r.clone
 
     range = (((base_direction - arc).to_i)..(base_direction + arc))
     samples = (range.to_a + [(base_direction + arc).to_i]).uniq
@@ -26,7 +26,7 @@ module FireControl
     result = nil
     rt = Benchmark.realtime do
       solutions = nil
-      target = opponents.first { |enemy| can_fire_at?(enemy) } || opponents.first
+      target = choose_target
       # log 'starting'
       # log target
       if target
@@ -35,7 +35,7 @@ module FireControl
           # log "#{robot.line_of_sight}"
           solutions = [robot.rotation]
         else
-          solutions = firing_solutions(target)
+          solutions = firing_solutions(robot, target)
         end
       end
       # log "#{(solutions || []).length} solutions found"

@@ -1,8 +1,16 @@
 module DriveControl
-  def find_drive_target
+  def location_heuristic(target, wall)
+    heuristic = distance(robot, wall)
+    if target
+      heuristic += distance(target, wall)
+    end
+    heuristic
+  end
+
+  def find_drive_target(target)
     if battle.board.walls.length > 0
       target_wall = battle.board.walls.reduce(nil) do |memo, wall|
-        if memo.nil? || distance(wall, robot) < distance(memo, robot)
+        if memo.nil? || location_heuristic(target, wall) < location_heursitic(target, memo)
           wall
         else
           memo
@@ -16,8 +24,13 @@ module DriveControl
   def drive_control_turn
     result = nil
     rt = Benchmark.realtime do
+      target = choose_target
       if !@drive_target
-        @drive_target = find_drive_target
+        @drive_target = find_drive_target(target)
+      end
+
+      if @drive_target && @drive_target.located_at?(robot)
+        @drive_target = nil
       end
 
       if @drive_target
