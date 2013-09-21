@@ -22,11 +22,17 @@ module DriveControl
   end
 
   def drive_control_turn
+    @drive_target_history ||= []
     result = nil
     rt = Benchmark.realtime do
       target = choose_target
       if !@drive_target
         @drive_target = find_drive_target(target)
+        if @drive_target_history.include?(@drive_target) || @drive_target.nil?
+          @drive_target = nil
+        else
+          @drive_target_history << @drive_target
+        end
       end
 
       if @drive_target && @drive_target.located_at?(robot)
@@ -35,6 +41,8 @@ module DriveControl
 
       if @drive_target
         result = move_towards!(@drive_target)
+      elsif target
+        result = move_towards!(target)
       end
     end
 
