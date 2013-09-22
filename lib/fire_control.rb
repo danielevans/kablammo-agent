@@ -1,9 +1,4 @@
 module FireControl
-  def aimed_properly?(test_robot, target)
-    los = targeted_los(test_robot, target)
-    los && los.none? { |pixel| wall_at?(pixel) } && los.last.located_at?(target)
-  end
-
   def firing_solutions(r, target)
     # primary_vector = Vector[(target.x - robot.x).to_f, (target.y - robot.y).to_f]
     # normal_vector = Vector[primary_vector[1], 0 - primary_vector[0]].normalize

@@ -1,4 +1,9 @@
 module MapInspection
+  def aimed_properly?(test_robot, target)
+    los = targeted_los(test_robot, target)
+    los && los.none? { |pixel| wall_at?(pixel) } && los.last.located_at?(target)
+  end
+
   def targeted_los(source, target)
     los = source.line_of_sight
     target_index = los.index { |pixel| pixel.x == target.x && pixel.y == target.y }
@@ -23,6 +28,9 @@ module MapInspection
   end
 
   def choose_target
-    opponents.first { |enemy| can_fire_at?(enemy) } || opponents.first
+    target = opponents.first { |enemy| properly_aimed_at?(enemy) }
+    target ||= opponents.first { |enemy| can_fire_at?(enemy) }
+    target ||= opponents.first
+    target
   end
 end
